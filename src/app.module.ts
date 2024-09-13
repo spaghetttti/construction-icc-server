@@ -11,6 +11,9 @@ import { AccountingModule } from './accounting/accounting.module';
 import { SuppliersModule } from './suppliers/suppliers.module';
 import { ReportsModule } from './reports/reports.module';
 import { User } from './users/user.entity';
+import { Project } from './projects/project.entity';
+import { Request } from './requests/requests.entity';
+import { Material } from './materials/material.entity';
 
 @Module({
   imports: [
@@ -22,7 +25,7 @@ import { User } from './users/user.entity';
       username: 'asilbekmuminov',
       password: 'azizbekloh',
       database: 'construction_db',
-      entities: [User],
+      entities: [User, Project, Request, Material],
       synchronize: true,
     }),
     AuthModule,

@@ -10,4 +10,5 @@ export type Roles =
   | 'foreman'
   | 'manager'
   | 'administrator'
-  | 'accountant';
+  | 'accountant'
+  | 'simple_user';

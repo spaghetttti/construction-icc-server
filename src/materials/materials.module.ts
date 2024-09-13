@@ -4,6 +4,6 @@ import { MaterialsService } from './materials.service';
 
 @Module({
   controllers: [MaterialsController],
-  providers: [MaterialsService]
+  providers: [MaterialsService],
 })
 export class MaterialsModule {}
