@@ -9,6 +9,8 @@ import {
 } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { Material } from '../materials/material.entity';
+import { MaterialCreateDto } from 'src/materials/dto/material-create.dto';
+import { MaterialUpdateDto } from 'src/materials/dto/material-update.dto';
 
 @Controller('inventory')
 export class InventoryController {
@@ -27,14 +29,7 @@ export class InventoryController {
   @Post('materials')
   createMaterial(
     @Body()
-    body: {
-      name: string;
-      quantity: number;
-      unit: string;
-      costPerUnit: number;
-      type: string;
-      supplier?: string;
-    },
+    body: MaterialCreateDto,
   ): Promise<Material> {
     const { name, quantity, unit, costPerUnit, type, supplier } = body;
     return this.inventoryService.createMaterial(
@@ -50,7 +45,7 @@ export class InventoryController {
   @Put('materials/:id')
   updateMaterial(
     @Param('id') id: number,
-    @Body() updateData: Partial<Material>,
+    @Body() updateData: MaterialUpdateDto,
   ): Promise<Material> {
     return this.inventoryService.updateMaterial(id, updateData);
   }
