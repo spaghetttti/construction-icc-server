@@ -15,7 +15,8 @@ import { Project } from './projects/project.entity';
 import { Request } from './requests/requests.entity';
 import { Material } from './materials/material.entity';
 import { Supplier } from './suppliers/supplier.entity';
-
+import { Accounting } from './accounting/accounting.entity';
+import { Report } from './reports/report.entity';
 @Module({
   imports: [
     ConfigModule.forRoot(),
@@ -26,7 +27,15 @@ import { Supplier } from './suppliers/supplier.entity';
       username: 'asilbekmuminov',
       password: 'azizbekloh',
       database: 'construction_db',
-      entities: [User, Project, Request, Material, Supplier],
+      entities: [
+        User,
+        Project,
+        Request,
+        Material,
+        Supplier,
+        Accounting,
+        Report,
+      ],
       synchronize: true,
     }),
     AuthModule,

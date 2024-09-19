@@ -11,6 +11,6 @@ export class UpdateProjectDto {
   status: string;
 
   @IsOptional()
-  @IsString()
+  // @IsString()
   assignedForeman?: number; // nullable field
 }

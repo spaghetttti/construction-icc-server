@@ -1,4 +1,5 @@
 import { IsNumber, IsOptional, IsString } from 'class-validator';
+import { Supplier } from 'src/suppliers/supplier.entity';
 
 export class MaterialUpdateDto {
   @IsOptional()
@@ -22,6 +23,6 @@ export class MaterialUpdateDto {
   costPerUnit: number;
 
   @IsOptional()
-  @IsString()
-  supplier: string; // Optional: supplier for this material
+  // @IsString()
+  supplier: Supplier; // Optional: supplier for this material
 }

@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Supplier } from 'src/suppliers/supplier.entity';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne } from 'typeorm';
 
 @Entity()
 export class Material {
@@ -20,6 +21,6 @@ export class Material {
   @Column('decimal')
   costPerUnit: number;
 
-  @Column({ nullable: true })
-  supplier: string; // Optional: supplier for this material
+  @ManyToOne(() => Supplier, { nullable: true })
+  supplier: Supplier; // Optional: supplier for this material
 }
