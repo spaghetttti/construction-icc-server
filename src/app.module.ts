@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { InventoryModule } from './inventory/inventory.module';
@@ -19,24 +19,30 @@ import { Accounting } from './accounting/accounting.entity';
 import { Report } from './reports/report.entity';
 @Module({
   imports: [
-    ConfigModule.forRoot(),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'asilbekmuminov',
-      password: 'azizbekloh',
-      database: 'construction_db',
-      entities: [
-        User,
-        Project,
-        Request,
-        Material,
-        Supplier,
-        Accounting,
-        Report,
-      ],
-      synchronize: true,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres',
+        host: config.get<string>('DATABASE_HOST'),
+        port: config.get<number>('DATABASE_PORT'),
+        username: config.get<string>('DATABASE_USER'),
+        password: config.get<string>('DATABASE_PASSWORD'),
+        database: config.get<string>('DATABASE_NAME'),
+        entities: [
+          User,
+          Project,
+          Request,
+          Material,
+          Supplier,
+          Accounting,
+          Report,
+        ],
+        synchronize: true,
+      }),
+      inject: [ConfigService],
     }),
     AuthModule,
     UsersModule,

@@ -1,25 +1,33 @@
-FROM node:alpine
-
-# Install PostgreSQL and its dependencies
-RUN apk add --no-cache postgresql postgresql-client
-
-# Create a non-root user for PostgreSQL
-RUN useradd -m postgres
-
-# Copy your application code
-COPY . /app
+FROM node:alpine as builder
 
 # Set the working directory
 WORKDIR /app
 
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
 # Install dependencies
 RUN npm install
 
-# Expose the PostgreSQL port
-EXPOSE 5432
+ENV NODE_ENV=production
+# ENV DATABASE_URL=postgres://myuser:secret@172.17.0.2:5432/mydatabase      
+# Copy the rest of the application code
+COPY . .
 
-# Switch to the non-root user
-USER postgres
+# Build the application
+RUN npm run build
 
-# Start the PostgreSQL server
-CMD ["pg_ctl", "start", "-d", "-l", "/var/log/postgresql/postgresql-server.log"]
+# Use a smaller base image for production
+FROM node:alpine
+
+# Copy the built application
+COPY --from=builder /app /app
+
+# Set the working directory
+WORKDIR /app
+
+# Expose the port your application listens on (e.g., 3000)
+EXPOSE 3000
+
+# Start the application
+CMD ["node", "dist/main.js"]
