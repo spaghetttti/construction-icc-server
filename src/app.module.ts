@@ -17,6 +17,7 @@ import { Material } from './materials/material.entity';
 import { Supplier } from './suppliers/supplier.entity';
 import { Accounting } from './accounting/accounting.entity';
 import { Report } from './reports/report.entity';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -24,24 +25,31 @@ import { Report } from './reports/report.entity';
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: (config: ConfigService) => ({
-        type: 'postgres',
-        host: config.get<string>('DATABASE_HOST'),
-        port: config.get<number>('DATABASE_PORT'),
-        username: config.get<string>('DATABASE_USER'),
-        password: config.get<string>('DATABASE_PASSWORD'),
-        database: config.get<string>('DATABASE_NAME'),
-        entities: [
-          User,
-          Project,
-          Request,
-          Material,
-          Supplier,
-          Accounting,
-          Report,
-        ],
-        synchronize: true,
-      }),
+      useFactory: (config: ConfigService) => {
+        const isProduction = config.get<string>('NODE_ENV') === 'production';
+        console.log(
+          isProduction,
+          config.get<string>('DATABASE_URL_PRODUCTION'),
+          config.get<string>('DATABASE_URL_LOCAL'),
+        );
+
+        return {
+          type: 'postgres',
+          url: isProduction
+            ? config.get<string>('DATABASE_URL_PRODUCTION')
+            : config.get<string>('DATABASE_URL_LOCAL'),
+          ssl: isProduction ? { rejectUnauthorized: false } : false, // SSL for production
+          entities: [
+            User,
+            Project,
+            Request,
+            Material,
+            Supplier,
+            Accounting,
+            Report,
+          ],
+        };
+      },
       inject: [ConfigService],
     }),
     AuthModule,
