@@ -26,13 +26,9 @@ import { Report } from './reports/report.entity';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (config: ConfigService) => {
-        const isProduction = config.get<string>('NODE_ENV') === 'production';
-        console.log(
-          isProduction,
-          config.get<string>('DATABASE_URL_PRODUCTION'),
-          config.get<string>('DATABASE_URL_LOCAL'),
-        );
+        console.log(config.get<string>('NODE_ENV'));
 
+        const isProduction = config.get<string>('NODE_ENV') === 'production';
         return {
           type: 'postgres',
           url: isProduction

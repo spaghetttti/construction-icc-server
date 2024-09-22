@@ -10,7 +10,9 @@ COPY package*.json ./
 RUN npm install
 
 ENV NODE_ENV=production
-# ENV DATABASE_URL=postgres://myuser:secret@172.17.0.2:5432/mydatabase      
+# Uncomment to use DATABASE_URL if needed
+ENV DATABASE_URL_PRODUCTION=postgresql://construction_db_owner:0vWVjR3PamLG@ep-jolly-violet-a51ycz9d.us-east-2.aws.neon.tech/construction_db?sslmode=require      
+
 # Copy the rest of the application code
 COPY . .
 
