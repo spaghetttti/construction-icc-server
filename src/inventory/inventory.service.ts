@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Material } from '../materials/material.entity';
+import { Supplier } from 'src/suppliers/supplier.entity';
 
 @Injectable()
 export class InventoryService {
@@ -16,7 +17,7 @@ export class InventoryService {
     unit: string,
     costPerUnit: number,
     type: string,
-    supplier?: string,
+    supplier?: Supplier,
   ): Promise<Material> {
     const newMaterial = this.materialRepository.create({
       name,

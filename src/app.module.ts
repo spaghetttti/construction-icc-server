@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { InventoryModule } from './inventory/inventory.module';
@@ -14,19 +14,39 @@ import { User } from './users/user.entity';
 import { Project } from './projects/project.entity';
 import { Request } from './requests/requests.entity';
 import { Material } from './materials/material.entity';
+import { Supplier } from './suppliers/supplier.entity';
+import { Accounting } from './accounting/accounting.entity';
+import { Report } from './reports/report.entity';
 
 @Module({
   imports: [
-    ConfigModule.forRoot(),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: 'asilbekmuminov',
-      password: 'azizbekloh',
-      database: 'construction_db',
-      entities: [User, Project, Request, Material],
-      synchronize: true,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: (config: ConfigService) => {
+        console.log(config.get<string>('NODE_ENV'));
+
+        const isProduction = config.get<string>('NODE_ENV') === 'production';
+        return {
+          type: 'postgres',
+          url: isProduction
+            ? config.get<string>('DATABASE_URL_PRODUCTION')
+            : config.get<string>('DATABASE_URL_LOCAL'),
+          ssl: isProduction ? { rejectUnauthorized: false } : false, // SSL for production
+          entities: [
+            User,
+            Project,
+            Request,
+            Material,
+            Supplier,
+            Accounting,
+            Report,
+          ],
+        };
+      },
+      inject: [ConfigService],
     }),
     AuthModule,
     UsersModule,
