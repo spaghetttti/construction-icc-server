@@ -6,7 +6,7 @@ export class Accounting {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column('decimal', { default: 0 })
+  @Column({ default: 0 })
   balance: number; // Bank balance
 
   @OneToMany(() => Report, (report) => report.accounting, { cascade: true })
