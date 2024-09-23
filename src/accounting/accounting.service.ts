@@ -54,8 +54,8 @@ export class AccountingService {
     }
 
     // Save transaction and update accounting
-    await this.reportsRepository.save(newReport);
     await this.accountingRepository.save(accounting);
+    await this.reportsRepository.save(newReport);
 
     return newReport;
   }

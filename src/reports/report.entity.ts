@@ -12,7 +12,7 @@ export class Report {
   @Column()
   dateOfTransaction: Date;
 
-  @Column('decimal')
+  @Column()
   amount: number; // Amount of the transaction
 
   @Column()
@@ -21,7 +21,7 @@ export class Report {
   @Column()
   description: string; // Description of the transaction
 
-  @ManyToOne(() => Accounting, (accounting) => accounting, {
+  @ManyToOne(() => Accounting, (accounting) => accounting.reports, {
     onDelete: 'CASCADE',
   })
   accounting: Accounting; // Reference to the accounting (bank)
