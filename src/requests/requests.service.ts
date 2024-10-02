@@ -62,9 +62,13 @@ export class RequestsService {
     updateRequestDto: UpdateRequestDto,
   ): Promise<Request> {
     const request = await this.requestsRepository.findOne({
-      where: { id: id },
+      where: { id },
       relations: ['materials'],
     });
+
+    if (!request) {
+      throw new Error(`Request with ID ${id} not found.`);
+    }
 
     // Check and update fields
     if (updateRequestDto.projectId) {

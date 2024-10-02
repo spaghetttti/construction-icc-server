@@ -9,6 +9,6 @@ import { InventoryModule } from 'src/inventory/inventory.module';
   imports: [TypeOrmModule.forFeature([Request]), InventoryModule],
   controllers: [RequestsController],
   providers: [RequestsService],
-  exports: [RequestsService],
+  exports: [RequestsService, TypeOrmModule],
 })
 export class RequestsModule {}

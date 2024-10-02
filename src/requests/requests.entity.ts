@@ -5,6 +5,7 @@ import {
   ManyToOne,
   ManyToMany,
   JoinTable,
+  // JoinColumn,
 } from 'typeorm';
 import { Project } from '../projects/project.entity';
 import { Material } from '../materials/material.entity'; // Materials
@@ -14,7 +15,8 @@ export class Request {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => Project, { nullable: false })
+  @ManyToOne(() => Project, { nullable: false, onDelete: 'CASCADE' })
+  // @JoinColumn({ name: 'projectId' })
   project: Project;
 
   @ManyToMany(() => Material) // Many materials can be requested in one request
