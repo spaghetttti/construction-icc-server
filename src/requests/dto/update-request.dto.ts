@@ -1,5 +1,4 @@
 import { IsString, IsNumber, IsArray, IsOptional } from 'class-validator';
-import { Material } from 'src/materials/material.entity';
 
 export class UpdateRequestDto {
   @IsOptional()
@@ -8,7 +7,7 @@ export class UpdateRequestDto {
 
   @IsOptional()
   @IsArray()
-  materials?: Material[];
+  materialIds?: number[];
 
   @IsOptional()
   @IsString()
