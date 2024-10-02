@@ -32,12 +32,15 @@ export class InventoryService {
 
   // Retrieve all materials
   async getAllMaterials(): Promise<Material[]> {
-    return this.materialRepository.find();
+    return this.materialRepository.find({ relations: ['supplier'] });
   }
 
   // Retrieve a material by ID
   async getMaterialById(id: number): Promise<Material> {
-    return this.materialRepository.findOneBy({ id });
+    return this.materialRepository.findOne({
+      where: { id },
+      relations: ['supplier'],
+    });
   }
 
   // Update a material

@@ -1,4 +1,4 @@
-import { IsString, IsOptional } from 'class-validator';
+import { IsString, IsOptional, IsNumber } from 'class-validator';
 
 export class UpdateProjectDto {
   @IsOptional()
@@ -14,6 +14,6 @@ export class UpdateProjectDto {
   status?: string;
 
   @IsOptional()
-  // @IsString()
+  @IsNumber()
   assignedForeman?: number;
 }

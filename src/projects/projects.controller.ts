@@ -9,6 +9,8 @@ import {
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
 import { Project } from './project.entity';
+import { CreateProjectDto } from './dto/create-project.dto';
+import { UpdateProjectDto } from './dto/update-project.dto';
 
 @Controller('projects')
 export class ProjectsController {
@@ -25,16 +27,16 @@ export class ProjectsController {
   }
 
   @Post()
-  create(@Body() project: Partial<Project>): Promise<Project> {
-    return this.projectsService.create(project);
+  create(@Body() createProjectDto: CreateProjectDto): Promise<Project> {
+    return this.projectsService.create(createProjectDto);
   }
 
   @Put(':id')
   update(
     @Param('id') id: number,
-    @Body() project: Partial<Project>,
+    @Body() updateProjectDto: UpdateProjectDto,
   ): Promise<Project> {
-    return this.projectsService.update(id, project);
+    return this.projectsService.update(id, updateProjectDto);
   }
 
   @Delete(':id')
