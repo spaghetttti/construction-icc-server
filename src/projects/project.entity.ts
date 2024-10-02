@@ -16,5 +16,5 @@ export class Project {
   status: string; // E.g., "Not Started", "In Progress", "Completed"
 
   @ManyToOne(() => User, (user) => user, { nullable: true })
-  assignedForeman: User; // Foreman who is responsible for the project (nullable)
+  assignedForeman: User | null; // Foreman who is responsible for the project (nullable)
 }
