@@ -1,73 +1,127 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+# **Construction Company Resource Management Application - Server-Side Documentation**
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+### **🚀 Tech Stack and Overview**
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+This system is built using **Nest.js** for the backend, **PostgreSQL** for the database, and **TypeORM** for ORM. It follows a modular architecture to ensure scalability and maintainability.
 
-## Description
+- **Nest.js**: A progressive Node.js framework for building efficient, reliable, and scalable server-side applications using TypeScript.
+- **PostgreSQL**: The primary database used for its reliability and powerful features, managed via **TypeORM**.
+- **JWT Authentication**: Used for securing endpoints with role-based access control.
+- **Docker**: The application can be containerized using Docker for easier deployment and consistent environments across different stages (development, staging, production).
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+---
 
-## Installation
+## 1. **📁 Folder Structure Overview**
 
-```bash
-$ npm install
-```
+The backend is organized into logical modules, each handling a specific part of the system's functionality. This ensures the system is modular, maintainable, and easy to extend.
 
-## Running the app
+- **modules/**: Contains all the individual modules of the application (e.g., `AuthModule`, `ProjectsModule`, `RequestsModule`, etc.)
+- **entities/**: Defines the entities (models) used in the database via TypeORM.
+- **controllers/**: Contains the controller logic for handling API requests.
+- **services/**: Contains business logic and interaction with repositories.
+- **middlewares/**: Handles cross-cutting concerns like authentication, validation, and error handling.
+- **interceptors/**: Used for transforming responses before they are sent to the client.
+  
+---
 
-```bash
-# development
-$ npm run start
+## 2. **🔧 Modules Breakdown**
 
-# watch mode
-$ npm run start:dev
+- **auth**: Handles user authentication and role-based access control. Manages login, registration, and access to secured endpoints.
+- **users**: Manages the CRUD operations for users and roles in the system.
+- **inventory**: Manages the materials in the warehouse, including stock updates, CRUD operations, and low-stock alerts.
+- **projects**: Handles the creation and management of construction projects. Tracks project status, descriptions, and team assignments.
+- **requests**: Manages material requests for projects, from creation by the Foreman to approval by the Administrator and execution by the Warehouse Manager.
+- **suppliers**: Manages suppliers, including adding, updating, and tracking material orders from suppliers.
+- **accounting**: Manages financial calculations related to material costs and supplier payments. Tracks expenses and maintains budgets.
+- **reports**: Generates reports based on inventory, material requests, project statuses, and financial data.
 
-# production mode
-$ npm run start:prod
-```
+---
 
-## Test
+## 3. **⚙️ Controllers and Services**
 
-```bash
-# unit tests
-$ npm run test
+- **AuthController**: Provides endpoints for user authentication, including login and registration. Handles token generation and validation via JWT.
+- **UsersController**: Manages user-related endpoints, such as fetching user information, updating profiles, and assigning roles.
+- **ProjectsController**: Handles the creation, updating, and deletion of projects, including fetching the list of projects.
+- **RequestsController**: Manages material requests, from creation to approval, including status updates and validations.
+- **SuppliersController**: Manages supplier-related operations, including creating and updating supplier information and placing orders.
+- **InventoryController**: Provides CRUD functionality for materials, updates stock, and tracks material usage.
+- **AccountingController**: Tracks all expenses and manages the project budgets, providing endpoints for calculating and recording financial information.
 
-# e2e tests
-$ npm run test:e2e
+---
 
-# test coverage
-$ npm run test:cov
-```
+## 4. **🚦 API Endpoints**
 
-## Support
+### **Auth**
+- **POST** `/auth/login`: Authenticate a user and generate a JWT token.
+- **POST** `/auth/register`: Register a new user (Admin only).
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+### **Projects**
+- **GET** `/projects`: Retrieve all projects with status and team information.
+- **POST** `/projects`: Create a new project with assigned status and foreman.
+- **PATCH** `/projects/:id`: Update a project’s details.
+- **DELETE** `/projects/:id`: Delete a project (restricted if there are associated requests).
 
-## Stay in touch
+### **Requests**
+- **GET** `/requests`: Retrieve all material requests.
+- **POST** `/requests`: Create a new material request for a project.
+- **PATCH** `/requests/:id`: Update the status or details of a material request.
+- **DELETE** `/requests/:id`: Delete a material request.
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+### **Inventory**
+- **GET** `/inventory`: Retrieve all materials and their stock levels.
+- **POST** `/inventory`: Add a new material to the warehouse.
+- **PATCH** `/inventory/:id`: Update the quantity or details of a material.
+- **DELETE** `/inventory/:id`: Remove a material from the inventory.
 
-## License
+### **Suppliers**
+- **GET** `/suppliers`: Retrieve all suppliers and their contact details.
+- **POST** `/suppliers`: Add a new supplier.
+- **PATCH** `/suppliers/:id`: Update supplier details.
+- **DELETE** `/suppliers/:id`: Delete a supplier.
 
-Nest is [MIT licensed](LICENSE).
+### **Accounting**
+- **GET** `/accounting`: Fetch all expenses and transactions.
+- **POST** `/accounting`: Record a new financial transaction.
+
+### **Reports**
+- **GET** `/reports`: Generate a report on various parts of the system (inventory, requests, projects, financials).
+
+---
+
+## 5. **📝 Application Workflow**
+
+### **Step 1: Project Creation**
+The **Manager** creates a project, defining details such as the project name, description, and assigned foreman. The project is stored with a status (e.g., "Not Started", "In Progress", "Completed"). This is the starting point for all workflow activities, as material requests are tied to these projects.
+
+### **Step 2: Material Inventory Management**
+The **Warehouse Manager** manages all materials in the inventory, updating stock levels and prices, ensuring materials are ready for requests. This includes CRUD operations for adding, updating, or removing materials and keeping track of quantities. Low-stock alerts are triggered automatically when quantities fall below a threshold.
+
+### **Step 3: Request Creation**
+A **Foreman** selects a project that hasn't started and creates a **Material Request** specifying the required materials and their quantities. The request is submitted to the **Manager** for review and approval.
+
+### **Step 4: Request Processing**
+The **Manager** receives the request and checks the inventory for availability. If the materials are available, the **Manager** forwards the request to the **Administrator**. If materials are unavailable, the **Manager** consults the **Accountant** and contacts **Suppliers** to place new orders.
+
+### **Step 5: Request Approval**
+The **Administrator** reviews the request after the **Manager** closes it. If approved, the request is sent to the **Warehouse Manager** for fulfillment. If rejected, it is sent back to the **Manager** for adjustment.
+
+### **Step 6: Request Fulfillment**
+The **Warehouse Manager** fulfills the request by delivering the materials to the project site. After fulfillment, the inventory is updated, and the request is marked as completed.
+
+### **Step 7: Financial Management**
+Once the materials are delivered, the **Accountant** calculates the expenses related to the materials used and updates the system’s financial records. This includes recording supplier costs, material prices, and project budgets.
+
+### **Step 8: Project Completion**
+As the project progresses, the **Manager** or **Administrator** updates the project’s status to reflect its phase ("In Progress", "Completed"). Upon completion, all associated requests and expenses are closed, and the project is finalized.
+
+---
+
+## 6. **🛠️ Database Schema**
+
+- **Users**: Handles all user-related information, including roles.
+- **Projects**: Stores all project-related data such as project name, status, and assigned foreman.
+- **Requests**: Tracks all material requests, their status, and related project details.
+- **Materials**: Stores all materials in the inventory with quantity, cost, and type.
+- **Suppliers**: Keeps track of supplier information and their associated material orders.
+- **Accounting**: Logs all expenses and tracks the financial side of material requests and supplier payments.
+
