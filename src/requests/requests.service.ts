@@ -5,6 +5,7 @@ import { Request } from './requests.entity';
 import { Material } from 'src/materials/material.entity';
 import { UpdateRequestDto } from './dto/update-request.dto';
 import { CreateRequestDto } from './dto/create-request.dto';
+import { Project } from 'src/projects/project.entity';
 @Injectable()
 export class RequestsService {
   constructor(
@@ -13,6 +14,9 @@ export class RequestsService {
 
     @InjectRepository(Material)
     private materialsRepository: Repository<Material>,
+
+    @InjectRepository(Project)
+    private projectsRepository: Repository<Project>,
   ) {}
 
   async findAll(): Promise<Request[]> {
@@ -20,18 +24,7 @@ export class RequestsService {
       relations: ['project', 'materials'],
     });
   }
-  //! update from orm docs
-  //   userRepository.find({
-  //     relations: {
-  //         project: true,
-  //     },
-  //     where: {
-  //         project: {
-  //             name: "TypeORM",
-  //             initials: "TORM",
-  //         },
-  //     },
-  // })
+
   async findOne(id: number): Promise<Request> {
     return this.requestsRepository.findOne({
       where: { id: id },
@@ -40,18 +33,24 @@ export class RequestsService {
   }
 
   async create(createRequestDto: CreateRequestDto): Promise<Request> {
-    const { projectId, materials, status, teamSize } = createRequestDto;
+    const { projectId, materialIds, ...rest } = createRequestDto;
 
-    // Fetch Material entities from IDs
-    const materialEntities = await this.materialsRepository.findBy({
-      id: In(materials), //? not sure if In(array of material ids )
+    const project = await this.projectsRepository.findOne({
+      where: { id: projectId },
+    });
+
+    if (!project) {
+      throw new Error(`Project with ID ${projectId} not found.`);
+    }
+
+    const materials = await this.materialsRepository.findBy({
+      id: In(materialIds),
     });
 
     const newRequest = this.requestsRepository.create({
-      project: { id: projectId } as any, // Assign project by ID
-      materials: materialEntities, // Assign the fetched materials
-      status,
-      teamSize,
+      ...rest,
+      project,
+      materials,
     });
 
     return this.requestsRepository.save(newRequest);
@@ -61,34 +60,39 @@ export class RequestsService {
     id: number,
     updateRequestDto: UpdateRequestDto,
   ): Promise<Request> {
+    const { projectId, materialIds, ...rest } = updateRequestDto;
+
     const request = await this.requestsRepository.findOne({
       where: { id },
-      relations: ['materials'],
+      relations: ['project', 'materials'],
     });
 
     if (!request) {
       throw new Error(`Request with ID ${id} not found.`);
     }
 
-    // Check and update fields
-    if (updateRequestDto.projectId) {
-      request.project = { id: updateRequestDto.projectId } as any; // Handle project update
-    }
-    if (updateRequestDto.materials) {
-      const materialEntities = await this.materialsRepository.findBy(
-        //?might be a problem with finby
-        updateRequestDto.materials,
-      );
-      request.materials = materialEntities; // Handle materials update
-    }
-    if (updateRequestDto.status) {
-      request.status = updateRequestDto.status; // Handle status update
-    }
-    if (updateRequestDto.teamSize) {
-      request.teamSize = updateRequestDto.teamSize; // Handle team size update
+    // Update project if provided
+    if (projectId) {
+      const project = await this.projectsRepository.findOne({
+        where: { id: projectId },
+      });
+      if (!project) {
+        throw new Error(`Project with ID ${projectId} not found.`);
+      }
+      request.project = project;
     }
 
-    return this.requestsRepository.save(request); // Save the entity with updated relations
+    // Update materials if provided
+    if (materialIds) {
+      const materials = await this.materialsRepository.findBy({
+        id: In(materialIds),
+      });
+      request.materials = materials;
+    }
+
+    Object.assign(request, rest);
+
+    return this.requestsRepository.save(request);
   }
 
   async delete(id: number): Promise<void> {

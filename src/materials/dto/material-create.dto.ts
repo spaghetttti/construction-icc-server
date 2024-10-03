@@ -1,7 +1,6 @@
 import { IsNumber, IsOptional, IsString } from 'class-validator';
-import { Supplier } from 'src/suppliers/supplier.entity';
 
-export class MaterialCreateDto {
+export class CreateMaterialDto {
   @IsString()
   name: string;
 
@@ -19,5 +18,5 @@ export class MaterialCreateDto {
 
   @IsOptional()
   // @IsString()
-  supplier: Supplier; // Optional: supplier for this material
+  supplier: number; // Optional: supplier for this material
 }
