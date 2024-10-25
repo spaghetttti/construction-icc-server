@@ -3,12 +3,17 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Accounting } from './accounting.entity';
 import { Report } from '../reports/report.entity';
+import { CreateReportDto } from 'src/reports/dto/create-report.dto';
+import { Material } from 'src/materials/material.entity';
 
 @Injectable()
 export class AccountingService {
   constructor(
     @InjectRepository(Accounting)
     private accountingRepository: Repository<Accounting>,
+
+    @InjectRepository(Material)
+    private readonly materialsRepository: Repository<Material>,
 
     @InjectRepository(Report)
     private reportsRepository: Repository<Report>,
@@ -39,24 +44,78 @@ export class AccountingService {
     });
   }
 
-  async createTransaction(reportData: Partial<Report>): Promise<Report> {
-    const accounting = await this.accountingRepository.findOne({
-      where: { id: 1 },
-      relations: ['reports'],
-    });
-    const newReport = this.reportsRepository.create(reportData);
+  async createReport(createReportDto: CreateReportDto): Promise<Report> {
+    const { type, amount, description, materials, dateOfTransaction } =
+      createReportDto;
 
-    // Update balance
-    if (newReport.type === 'income') {
-      accounting.balance += Number(newReport.amount);
-    } else if (newReport.type === 'outcome') {
-      accounting.balance -= Number(newReport.amount);
+    const accounting = await this.getAccounting();
+
+    if (!accounting) {
+      throw new Error('Accounting record not found');
+    }
+    // Create the report record
+    const report = this.reportsRepository.create({
+      type,
+      amount,
+      description,
+      dateOfTransaction,
+      accounting,
+    });
+
+    // Save the report first to ensure it's created
+    await this.reportsRepository.save(report);
+
+    // Process each material and update inventory accordingly
+    if (materials) {
+      for (const materialDto of materials) {
+        const { materialId, quantity } = materialDto;
+
+        // Find the material in the inventory
+        let inventoryMaterial = await this.materialsRepository.findOne({
+          where: { id: materialId },
+        });
+
+        if (!inventoryMaterial) {
+          // If the material does not exist, create a new one with zero quantity
+          inventoryMaterial = this.materialsRepository.create({
+            id: Number(materialId),
+            quantity: 0,
+          });
+        }
+
+        // Update the material quantity based on the transaction type
+        if (type === 'income') {
+          // Add quantity to the inventory if it's an income
+          inventoryMaterial.quantity += quantity;
+        } else if (type === 'outcome') {
+          // Subtract quantity from the inventory if it's an outcome
+          if (inventoryMaterial.quantity < quantity) {
+            throw new BadRequestException(
+              `Not enough stock for material with ID ${materialId}`,
+            );
+          }
+          inventoryMaterial.quantity -= quantity;
+        }
+
+        // Save the updated material quantity
+        await this.materialsRepository.save(inventoryMaterial);
+      }
     }
 
-    // Save transaction and update accounting
-    await this.accountingRepository.save(accounting);
-    await this.reportsRepository.save(newReport);
+    // Update the accounting balance based on the transaction type
+    if (type === 'income') {
+      accounting.balance += amount; // Increase balance for income
+    } else if (type === 'outcome') {
+      if (accounting.balance < amount) {
+        throw new BadRequestException('Not enough balance for this outcome');
+      }
+      accounting.balance -= amount; // Decrease balance for outcome
+    }
 
-    return newReport;
+    // Save the updated accounting balance
+    await this.accountingRepository.save(accounting);
+
+    // Return the saved report
+    return report;
   }
 }

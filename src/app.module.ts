@@ -17,6 +17,7 @@ import { Material } from './materials/material.entity';
 import { Supplier } from './suppliers/supplier.entity';
 import { Accounting } from './accounting/accounting.entity';
 import { Report } from './reports/report.entity';
+import { RequestMaterial } from './requests/request-material.entity';
 
 @Module({
   imports: [
@@ -39,11 +40,13 @@ import { Report } from './reports/report.entity';
             User,
             Project,
             Request,
+            RequestMaterial,
             Material,
             Supplier,
             Accounting,
             Report,
           ],
+          // synchronize: true,
         };
       },
       inject: [ConfigService],

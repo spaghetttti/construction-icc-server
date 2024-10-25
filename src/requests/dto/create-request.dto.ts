@@ -1,10 +1,14 @@
-import { IsString, IsNumber, IsArray } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsString, IsNumber, IsArray, ValidateNested } from 'class-validator';
+import { MaterialQuantityDto } from './materials-list.dto';
 export class CreateRequestDto {
   @IsNumber()
   projectId: number;
 
   @IsArray()
-  materialIds: number[]; // Array of material IDs
+  @ValidateNested({ each: true })
+  @Type(() => MaterialQuantityDto)
+  materials: MaterialQuantityDto[];
 
   @IsString()
   status: string;

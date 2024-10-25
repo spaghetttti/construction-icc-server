@@ -5,10 +5,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Request } from './requests.entity';
 import { InventoryModule } from 'src/inventory/inventory.module';
 import { ProjectsModule } from 'src/projects/projects.module';
+import { RequestMaterial } from './request-material.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Request]),
+    TypeOrmModule.forFeature([Request, RequestMaterial]),
     InventoryModule,
     forwardRef(() => ProjectsModule),
   ],

@@ -3,12 +3,11 @@ import {
   Column,
   PrimaryGeneratedColumn,
   ManyToOne,
-  ManyToMany,
-  JoinTable,
+  OneToMany,
   // JoinColumn,
 } from 'typeorm';
 import { Project } from '../projects/project.entity';
-import { Material } from '../materials/material.entity'; // Materials
+import { RequestMaterial } from './request-material.entity';
 
 @Entity()
 export class Request {
@@ -19,9 +18,12 @@ export class Request {
   // @JoinColumn({ name: 'projectId' })
   project: Project;
 
-  @ManyToMany(() => Material) // Many materials can be requested in one request
-  @JoinTable() // Creates the join table to store the many-to-many relationship
-  materials: Material[]; // List of requested materials (foreign key)
+  @OneToMany(
+    () => RequestMaterial,
+    (requestMaterial) => requestMaterial.request,
+    { cascade: true },
+  )
+  requestMaterials: RequestMaterial[]; // Array of RequestMaterial entities storing material and quantity
 
   @Column()
   status: string; // E.g., "Pending", "Approved", "Rejected"
