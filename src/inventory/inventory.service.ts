@@ -34,6 +34,9 @@ export class InventoryService {
   ): Promise<Material> {
     const { supplier: supplierId, ...materialData } = createMaterialDto;
 
+    //! check via name if material with the same name exists ask for rename or append quantity
+    //! check for price difference too
+
     const newMaterial = this.materialRepository.create(materialData);
 
     // If a supplierId is provided, find the supplier and associate it with the material

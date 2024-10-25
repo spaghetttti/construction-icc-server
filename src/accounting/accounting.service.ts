@@ -53,7 +53,7 @@ export class AccountingService {
     if (!accounting) {
       throw new Error('Accounting record not found');
     }
-    // Create the report record
+
     const report = this.reportsRepository.create({
       type,
       amount,
@@ -62,33 +62,26 @@ export class AccountingService {
       accounting,
     });
 
-    // Save the report first to ensure it's created
     await this.reportsRepository.save(report);
 
-    // Process each material and update inventory accordingly
     if (materials) {
       for (const materialDto of materials) {
         const { materialId, quantity } = materialDto;
 
-        // Find the material in the inventory
         let inventoryMaterial = await this.materialsRepository.findOne({
           where: { id: materialId },
         });
-
+        //! change this logic to create a new matrial type tie it up with inventory.service.createMaterial()
         if (!inventoryMaterial) {
-          // If the material does not exist, create a new one with zero quantity
           inventoryMaterial = this.materialsRepository.create({
             id: Number(materialId),
             quantity: 0,
           });
         }
 
-        // Update the material quantity based on the transaction type
         if (type === 'income') {
-          // Add quantity to the inventory if it's an income
           inventoryMaterial.quantity += quantity;
         } else if (type === 'outcome') {
-          // Subtract quantity from the inventory if it's an outcome
           if (inventoryMaterial.quantity < quantity) {
             throw new BadRequestException(
               `Not enough stock for material with ID ${materialId}`,
@@ -97,25 +90,21 @@ export class AccountingService {
           inventoryMaterial.quantity -= quantity;
         }
 
-        // Save the updated material quantity
         await this.materialsRepository.save(inventoryMaterial);
       }
     }
 
-    // Update the accounting balance based on the transaction type
     if (type === 'income') {
-      accounting.balance += amount; // Increase balance for income
+      accounting.balance += amount;
     } else if (type === 'outcome') {
       if (accounting.balance < amount) {
         throw new BadRequestException('Not enough balance for this outcome');
       }
-      accounting.balance -= amount; // Decrease balance for outcome
+      accounting.balance -= amount;
     }
 
-    // Save the updated accounting balance
     await this.accountingRepository.save(accounting);
 
-    // Return the saved report
     return report;
   }
 }

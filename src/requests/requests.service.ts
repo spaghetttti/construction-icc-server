@@ -46,7 +46,6 @@ export class RequestsService {
       throw new BadRequestException(`Project with ID ${projectId} not found`);
     }
 
-    // Create a new request
     const request = this.requestsRepository.create({
       project,
       ...rest,
@@ -54,7 +53,6 @@ export class RequestsService {
 
     await this.requestsRepository.save(request);
 
-    // Process each material and create RequestMaterial records
     for (const materialDto of materials) {
       const { materialId, quantity } = materialDto;
 
@@ -68,17 +66,6 @@ export class RequestsService {
         );
       }
 
-      if (material.quantity < quantity) {
-        throw new BadRequestException(
-          `Not enough stock for material with ID ${materialId}`,
-        );
-      }
-
-      // Reduce the material quantity in inventory
-      material.quantity -= quantity;
-      await this.materialsRepository.save(material);
-
-      // Create a RequestMaterial entity
       const requestMaterial = this.requestMaterialsRepository.create({
         request,
         material,
@@ -88,7 +75,6 @@ export class RequestsService {
       await this.requestMaterialsRepository.save(requestMaterial);
     }
 
-    // Return the full request with materials and quantities
     return this.requestsRepository.findOne({
       where: { id: request.id },
       relations: ['requestMaterials', 'requestMaterials.material'],
@@ -101,7 +87,6 @@ export class RequestsService {
   ): Promise<Request> {
     const { projectId, materials, ...rest } = updateRequestDto;
 
-    // Fetch the request along with related project and request materials
     const request = await this.requestsRepository.findOne({
       where: { id },
       relations: ['project', 'requestMaterials', 'requestMaterials.material'],
@@ -111,7 +96,6 @@ export class RequestsService {
       throw new Error(`Request with ID ${id} not found.`);
     }
 
-    // Update project if provided
     if (projectId) {
       const project = await this.projectsRepository.findOne({
         where: { id: projectId },
@@ -122,26 +106,15 @@ export class RequestsService {
       request.project = project;
     }
 
-    // Apply other updates to the request before saving it
     Object.assign(request, rest);
 
-    // Save the updated request first to ensure it has an ID
     await this.requestsRepository.save(request);
 
-    // Handle materials and quantities update
     if (materials) {
-      // Step 1: Restore previous material quantities to inventory
       for (const requestMaterial of request.requestMaterials) {
-        const { material, quantity } = requestMaterial;
-
-        material.quantity += quantity; // Restore quantity back to the inventory
-        await this.materialsRepository.save(material);
-
-        // Remove the existing RequestMaterial entry
         await this.requestMaterialsRepository.remove(requestMaterial);
       }
 
-      // Step 2: Process the new materials from the updateRequestDto
       for (const materialDto of materials) {
         const { materialId, quantity } = materialDto;
 
@@ -155,19 +128,8 @@ export class RequestsService {
           );
         }
 
-        if (material.quantity < quantity) {
-          throw new BadRequestException(
-            `Not enough stock for material with ID ${materialId}`,
-          );
-        }
-
-        // Reduce the material quantity in inventory
-        material.quantity -= quantity;
-        await this.materialsRepository.save(material);
-
-        // Create new RequestMaterial entry
         const requestMaterial = this.requestMaterialsRepository.create({
-          request, // Associate the request that is now fully saved and has an ID
+          request,
           material,
           quantity,
         });
@@ -176,7 +138,6 @@ export class RequestsService {
       }
     }
 
-    // Return the updated request with materials
     return this.requestsRepository.findOne({
       where: { id: request.id },
       relations: ['requestMaterials', 'requestMaterials.material'],
