@@ -53,14 +53,8 @@ export class AccountingService {
   }
 
   async createReport(createReportDto: CreateReportDto): Promise<Report> {
-    const {
-      type,
-      amount,
-      description,
-      dateOfTransaction,
-      personId,
-      projectId,
-    } = createReportDto;
+    const { type, amount, description, dateOfTransaction, person, projectId } =
+      createReportDto;
 
     const accounting = await this.getAccounting();
 
@@ -68,19 +62,19 @@ export class AccountingService {
       throw new Error('Accounting record not found');
     }
 
-    let user: User | null;
-    let externalPerson: string | null;
+    let user: User | null = null;
+    let externalPerson: string | null = null;
 
     // Check if 'person' is a string (userId) or an actual User entity
-    if (typeof personId === 'number') {
+    if (typeof person === 'number') {
       user = await this.usersRepository.findOne({
-        where: { id: personId },
+        where: { id: person },
       }); // Retrieve user by ID (assuming person is userId string)
       if (!user) {
-        throw new BadRequestException(`User with ID ${personId} not found`);
+        throw new BadRequestException(`User with ID ${person} not found`);
       }
-    } else if (typeof personId === 'string') {
-      externalPerson = personId;
+    } else if (typeof person === 'string') {
+      externalPerson = person;
     }
 
     let reportProject: Project | null = null;

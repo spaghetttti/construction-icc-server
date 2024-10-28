@@ -38,13 +38,14 @@ export class CreateReportDto {
   projectId?: number;
 
   @IsArray()
+  @IsOptional()
   @ValidateNested({ each: true })
   @Type(() => MaterialQuantityDto)
   materials: MaterialQuantityDto[]; // Array of materials with their quantities
 
   @IsOptional()
-  personId: number;
+  person: number | string;
 
-  @IsOptional()
-  externalPerson: string;
+  // @IsOptional()
+  // externalPerson: string;
 }
