@@ -1,13 +1,22 @@
-import { IsString, IsNumber, IsArray, IsOptional } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsString,
+  IsNumber,
+  IsArray,
+  IsOptional,
+  ValidateNested,
+} from 'class-validator';
+import { MaterialQuantityDto } from './materials-list.dto';
 
 export class UpdateRequestDto {
   @IsOptional()
   @IsNumber()
   projectId?: number;
 
-  @IsOptional()
   @IsArray()
-  materialIds?: number[];
+  @ValidateNested({ each: true })
+  @Type(() => MaterialQuantityDto)
+  materials: MaterialQuantityDto[];
 
   @IsOptional()
   @IsString()

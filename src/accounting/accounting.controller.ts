@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
 import { AccountingService } from './accounting.service';
-import { Report } from '../reports/report.entity';
+import { CreateReportDto } from 'src/reports/dto/create-report.dto';
 
 @Controller('accounting')
 export class AccountingController {
@@ -12,7 +12,7 @@ export class AccountingController {
   }
 
   @Post('transaction')
-  createTransaction(@Body() reportData: Partial<Report>) {
-    return this.accountingService.createTransaction(reportData);
+  createTransaction(@Body() reportData: CreateReportDto) {
+    return this.accountingService.createReport(reportData);
   }
 }

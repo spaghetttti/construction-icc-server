@@ -13,13 +13,13 @@ export class Report {
   dateOfTransaction: Date;
 
   @Column()
-  amount: number; // Amount of the transaction
+  amount: number;
 
   @Column()
-  type: 'income' | 'outcome'; // Transaction type (income or outcome)
+  type: 'income' | 'outcome';
 
   @Column()
-  description: string; // Description of the transaction
+  description: string;
 
   @ManyToOne(() => Accounting, (accounting) => accounting.reports, {
     onDelete: 'CASCADE',
@@ -30,8 +30,11 @@ export class Report {
   project?: Project;
 
   @ManyToOne(() => Material, { nullable: true }) // Optional material reference
-  material?: Material;
+  material?: Material; // might have to change this
 
-  @ManyToOne(() => User) // Reference to the person involved in the transaction
-  person: User; // User who performed the transaction (like Foreman, Manager, etc.)
+  @ManyToOne(() => User)
+  person: User;
+
+  @Column({ nullable: true })
+  externalPerson?: string;
 }

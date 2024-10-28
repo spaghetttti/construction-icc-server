@@ -22,5 +22,5 @@ export class Material {
   costPerUnit: number;
 
   @ManyToOne(() => Supplier, { nullable: true })
-  supplier: Supplier; // Optional: supplier for this material
+  supplier: Supplier;
 }

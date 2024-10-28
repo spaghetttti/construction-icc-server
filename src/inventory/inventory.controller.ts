@@ -9,8 +9,8 @@ import {
 } from '@nestjs/common';
 import { InventoryService } from './inventory.service';
 import { Material } from '../materials/material.entity';
-import { CreateMaterialDto } from 'src/materials/dto/material-create.dto';
-import { UpdateMaterialDto } from 'src/materials/dto/material-update.dto';
+import { CreateMaterialDto } from 'src/materials/dto/create-material.dto';
+import { UpdateMaterialDto } from 'src/materials/dto/update-material.dto';
 
 @Controller('inventory')
 export class InventoryController {
