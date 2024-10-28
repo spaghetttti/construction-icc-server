@@ -1,9 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Material } from '../materials/material.entity';
-import { UpdateMaterialDto } from 'src/materials/dto/material-update.dto';
-import { CreateMaterialDto } from 'src/materials/dto/material-create.dto';
+import { UpdateMaterialDto } from 'src/materials/dto/update-material.dto';
+import { CreateMaterialDto } from 'src/materials/dto/create-material.dto';
 import { Supplier } from 'src/suppliers/supplier.entity';
 
 @Injectable()
@@ -28,18 +32,46 @@ export class InventoryService {
       relations: ['supplier'],
     });
   }
-
   async createMaterial(
     createMaterialDto: CreateMaterialDto,
   ): Promise<Material> {
-    const { supplier: supplierId, ...materialData } = createMaterialDto;
+    const {
+      supplier: supplierId,
+      name,
+      quantity,
+      costPerUnit,
+      ...materialData
+    } = createMaterialDto;
 
-    //! check via name if material with the same name exists ask for rename or append quantity
-    //! check for price difference too
+    // Check if material with the same name already exists
+    const existingMaterial = await this.materialRepository.findOne({
+      where: { name },
+    });
 
-    const newMaterial = this.materialRepository.create(materialData);
+    if (existingMaterial) {
+      // Check if price differs
+      if (existingMaterial.costPerUnit !== costPerUnit) {
+        throw new ConflictException(
+          `A material with the name "${name}" already exists but with a different price. Please rename the material or adjust the price.`,
+        );
+      }
 
-    // If a supplierId is provided, find the supplier and associate it with the material
+      // Append quantity if the same material exists and the price matches
+      existingMaterial.quantity += Number(quantity);
+
+      // Update the existing material record with the new quantity
+      return this.materialRepository.save(existingMaterial);
+    }
+
+    // Create a new material if none exists with the same name
+    const newMaterial = this.materialRepository.create({
+      ...materialData,
+      name,
+      quantity,
+      costPerUnit,
+    });
+
+    // Associate supplier if provided
     if (supplierId && supplierId != -1) {
       const supplier = await this.supplierRepository.findOneBy({
         id: supplierId,
@@ -54,6 +86,7 @@ export class InventoryService {
       newMaterial.supplier = null;
     }
 
+    // Save the new material in the repository
     return this.materialRepository.save(newMaterial);
   }
 

@@ -41,4 +41,10 @@ export class CreateReportDto {
   @ValidateNested({ each: true })
   @Type(() => MaterialQuantityDto)
   materials: MaterialQuantityDto[]; // Array of materials with their quantities
+
+  @IsOptional()
+  personId: number;
+
+  @IsOptional()
+  externalPerson: string;
 }

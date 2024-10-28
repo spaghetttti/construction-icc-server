@@ -1,10 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Accounting } from './accounting.entity';
 import { Report } from '../reports/report.entity';
 import { CreateReportDto } from 'src/reports/dto/create-report.dto';
-import { Material } from 'src/materials/material.entity';
+import { User } from 'src/users/user.entity';
+import { Project } from 'src/projects/project.entity';
 
 @Injectable()
 export class AccountingService {
@@ -12,8 +17,11 @@ export class AccountingService {
     @InjectRepository(Accounting)
     private accountingRepository: Repository<Accounting>,
 
-    @InjectRepository(Material)
-    private readonly materialsRepository: Repository<Material>,
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
+
+    @InjectRepository(Project)
+    private readonly projectRepository: Repository<Project>,
 
     @InjectRepository(Report)
     private reportsRepository: Repository<Report>,
@@ -45,13 +53,45 @@ export class AccountingService {
   }
 
   async createReport(createReportDto: CreateReportDto): Promise<Report> {
-    const { type, amount, description, materials, dateOfTransaction } =
-      createReportDto;
+    const {
+      type,
+      amount,
+      description,
+      dateOfTransaction,
+      personId,
+      projectId,
+    } = createReportDto;
 
     const accounting = await this.getAccounting();
 
     if (!accounting) {
       throw new Error('Accounting record not found');
+    }
+
+    let user: User | null;
+    let externalPerson: string | null;
+
+    // Check if 'person' is a string (userId) or an actual User entity
+    if (typeof personId === 'number') {
+      user = await this.usersRepository.findOne({
+        where: { id: personId },
+      }); // Retrieve user by ID (assuming person is userId string)
+      if (!user) {
+        throw new BadRequestException(`User with ID ${personId} not found`);
+      }
+    } else if (typeof personId === 'string') {
+      externalPerson = personId;
+    }
+
+    let reportProject: Project | null = null;
+
+    if (projectId) {
+      reportProject = await this.projectRepository.findOne({
+        where: { id: projectId },
+      });
+      if (!reportProject) {
+        throw new NotFoundException(`Project with ID ${projectId} not found`);
+      }
     }
 
     const report = this.reportsRepository.create({
@@ -60,39 +100,42 @@ export class AccountingService {
       description,
       dateOfTransaction,
       accounting,
+      person: user,
+      externalPerson: externalPerson,
+      project: reportProject,
     });
 
     await this.reportsRepository.save(report);
 
-    if (materials) {
-      for (const materialDto of materials) {
-        const { materialId, quantity } = materialDto;
+    // if (materials) {
+    //   for (const materialDto of materials) {
+    //     const { materialId, quantity } = materialDto;
 
-        let inventoryMaterial = await this.materialsRepository.findOne({
-          where: { id: materialId },
-        });
-        //! change this logic to create a new matrial type tie it up with inventory.service.createMaterial()
-        if (!inventoryMaterial) {
-          inventoryMaterial = this.materialsRepository.create({
-            id: Number(materialId),
-            quantity: 0,
-          });
-        }
+    //     let inventoryMaterial = await this.materialsRepository.findOne({
+    //       where: { id: materialId },
+    //     });
+    //     //! change this logic to create a new matrial type tie it up with inventory.service.createMaterial()
+    //     if (!inventoryMaterial) {
+    //       inventoryMaterial = this.materialsRepository.create({
+    //         id: Number(materialId),
+    //         quantity: 0,
+    //       });
+    //     }
 
-        if (type === 'income') {
-          inventoryMaterial.quantity += quantity;
-        } else if (type === 'outcome') {
-          if (inventoryMaterial.quantity < quantity) {
-            throw new BadRequestException(
-              `Not enough stock for material with ID ${materialId}`,
-            );
-          }
-          inventoryMaterial.quantity -= quantity;
-        }
+    //     if (type === 'income') {
+    //       inventoryMaterial.quantity += quantity;
+    //     } else if (type === 'outcome') {
+    //       if (inventoryMaterial.quantity < quantity) {
+    //         throw new BadRequestException(
+    //           `Not enough stock for material with ID ${materialId}`,
+    //         );
+    //       }
+    //       inventoryMaterial.quantity -= quantity;
+    //     }
 
-        await this.materialsRepository.save(inventoryMaterial);
-      }
-    }
+    //     await this.materialsRepository.save(inventoryMaterial);
+    //   }
+    // }
 
     if (type === 'income') {
       accounting.balance += amount;
